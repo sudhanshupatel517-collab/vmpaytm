@@ -5,105 +5,158 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Vending Machine</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Light Kiosk Background -->
-    <div class="kiosk-bg"></div>
+    <header class="top-nav">
+        <div class="brand">
+            <span class="icon">⚡</span>
+            <h1>SmartVending</h1>
+        </div>
+        <p class="subtitle">Quick & automated delivery</p>
+    </header>
 
     <main class="container">
-        <header class="header">
-            <div class="logo">
-                <span class="logo-icon">📦</span>
-                <h1>SmartVending</h1>
+        <h2 class="section-title">Fresh Snacks</h2>
+        <div class="products-grid" id="products-grid">
+            
+            <div class="product-card" data-id="chips" data-name="Chips" data-price="10" data-icon="🥔">
+                <div class="product-image">🥔</div>
+                <div class="product-details">
+                    <h3 class="product-name">Chips</h3>
+                    <div class="price-action">
+                        <span class="price">₹10</span>
+                        <div class="action-btn-container">
+                            <button class="add-btn">ADD</button>
+                            <div class="qty-control hidden">
+                                <button class="minus-btn">−</button>
+                                <span class="qty-text">1</span>
+                                <button class="plus-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p class="subtitle">Raspberry Pi Powered Dispenser</p>
-        </header>
-
-        <section class="card">
-            <div class="status-indicator">
-                <div class="dot pulse"></div>
-                <span id="main-status">Select your item</span>
-            </div>
-
-            <div id="items-grid" class="items-grid kiosk-grid">
-                <!-- Items -->
-                <div class="item-card kiosk-item" data-id="chips" data-name="Chips" data-price="10" data-icon="🥔">
-                    <div class="item-check hidden">✔️</div>
-                    <div class="item-icon">🥔</div>
-                    <h3>Chips</h3>
-                    <div class="item-price">₹10</div>
-                </div>
-                <div class="item-card kiosk-item" data-id="biscuit" data-name="Biscuits" data-price="10" data-icon="🍪">
-                    <div class="item-check hidden">✔️</div>
-                    <div class="item-icon">🍪</div>
-                    <h3>Biscuits</h3>
-                    <div class="item-price">₹10</div>
-                </div>
-                <div class="item-card kiosk-item" data-id="soda" data-name="Soda" data-price="40" data-icon="🥤">
-                    <div class="item-check hidden">✔️</div>
-                    <div class="item-icon">🥤</div>
-                    <h3>Soda</h3>
-                    <div class="item-price">₹40</div>
-                </div>
-                <div class="item-card kiosk-item" data-id="chocolate" data-name="Chocolate" data-price="20" data-icon="🍫">
-                    <div class="item-check hidden">✔️</div>
-                    <div class="item-icon">🍫</div>
-                    <h3>Chocolate</h3>
-                    <div class="item-price">₹20</div>
+            
+            <div class="product-card" data-id="biscuit" data-name="Biscuits" data-price="10" data-icon="🍪">
+                <div class="product-image">🍪</div>
+                <div class="product-details">
+                    <h3 class="product-name">Biscuits</h3>
+                    <div class="price-action">
+                        <span class="price">₹10</span>
+                        <div class="action-btn-container">
+                            <button class="add-btn">ADD</button>
+                            <div class="qty-control hidden">
+                                <button class="minus-btn">−</button>
+                                <span class="qty-text">1</span>
+                                <button class="plus-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="message-area" class="message-area hidden"></div>
-        </section>
+            <div class="product-card" data-id="soda" data-name="Soda" data-price="40" data-icon="🥤">
+                <div class="product-image">🥤</div>
+                <div class="product-details">
+                    <h3 class="product-name">Soda</h3>
+                    <div class="price-action">
+                        <span class="price">₹40</span>
+                        <div class="action-btn-container">
+                            <button class="add-btn">ADD</button>
+                            <div class="qty-control hidden">
+                                <button class="minus-btn">−</button>
+                                <span class="qty-text">1</span>
+                                <button class="plus-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <footer class="footer compliance-footer">
+            <div class="product-card" data-id="chocolate" data-name="Chocolate" data-price="20" data-icon="🍫">
+                <div class="product-image">🍫</div>
+                <div class="product-details">
+                    <h3 class="product-name">Chocolate</h3>
+                    <div class="price-action">
+                        <span class="price">₹20</span>
+                        <div class="action-btn-container">
+                            <button class="add-btn">ADD</button>
+                            <div class="qty-control hidden">
+                                <button class="minus-btn">−</button>
+                                <span class="qty-text">1</span>
+                                <button class="plus-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <footer class="compliance-footer">
             <div class="compliance-links">
-                <a href="/about" target="_blank">About Us</a> | 
-                <a href="/contact" target="_blank">Contact Us</a> | 
-                <a href="/checkout-flow" target="_blank">Checkout Flow</a> | 
-                <a href="/privacy-policy" target="_blank">Privacy Policy</a> | 
-                <a href="/terms" target="_blank">Terms & Conditions</a> | 
+                <a href="/about" target="_blank">About Us</a>
+                <a href="/contact" target="_blank">Contact Us</a>
+                <a href="/checkout-flow" target="_blank">Checkout Flow</a>
+                <a href="/privacy-policy" target="_blank">Privacy Policy</a>
+                <a href="/terms" target="_blank">Terms & Conditions</a>
                 <a href="/refund-policy" target="_blank">Refund Policy</a>
             </div>
-            <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">&copy; 2026 College Project | RPi 4 Model B</p>
+            <p>&copy; 2026 College Project</p>
         </footer>
     </main>
 
-    <!-- Cart Bottom Bar -->
-    <div id="cart-bar" class="cart-bar hidden">
-        <div class="cart-left">
-            <div id="cart-icon" class="cart-item-icon">🥔</div>
-            <div class="cart-item-details">
-                <h4 id="cart-name">Chips</h4>
-                <p id="cart-unit-price">₹10</p>
-            </div>
-            <button id="btn-remove-cart" class="btn-icon">✖</button>
-            
-            <div class="qty-selector">
-                <button id="btn-qty-minus" class="btn-qty">-</button>
-                <span id="cart-qty">1</span>
-                <button id="btn-qty-plus" class="btn-qty">+</button>
+    <!-- Sticky Cart Bar -->
+    <div class="cart-bar hidden" id="cart-bar">
+        <div class="cart-summary">
+            <div class="cart-icon">🛍️</div>
+            <div class="cart-text">
+                <span id="cart-total-items">0 Items</span>
+                <p class="cart-total-price" id="cart-total-price">₹0</p>
             </div>
         </div>
-        
-        <div class="cart-right">
-            <div class="compliance-checkbox">
-                <input type="checkbox" id="terms-checkbox" required>
-                <label for="terms-checkbox">
-                    I agree to the <a href="/privacy-policy" target="_blank">Privacy Policy</a>, <a href="/terms" target="_blank">Terms</a>, and <a href="/refund-policy" target="_blank">Refund Policy</a>
-                </label>
+        <button class="view-cart-btn" id="btn-view-cart">
+            View Cart <span class="arr">▲</span>
+        </button>
+    </div>
+
+    <!-- Slide-up Cart Panel -->
+    <div class="cart-panel-overlay hidden" id="cart-panel-overlay">
+        <div class="cart-panel" id="cart-panel">
+            <div class="cart-panel-header">
+                <h2>Your Cart</h2>
+                <button class="close-cart-btn" id="btn-close-cart">✖</button>
             </div>
-            <button id="btn-checkout" class="btn-checkout">
-                <span class="checkout-text">Pay Total</span>
-                <span id="cart-total" class="checkout-total">₹10</span>
-            </button>
+            
+            <div class="cart-items-list" id="cart-items-list">
+                <!-- Dynamically injected via JS -->
+            </div>
+            
+            <div class="cart-panel-footer">
+                <div class="cart-total-row">
+                    <span>Total Amount</span>
+                    <span id="panel-total-price">₹0</span>
+                </div>
+                
+                <div class="compliance-checkbox-container" style="margin-top: 0; margin-bottom: 15px;">
+                    <input type="checkbox" id="terms-checkbox" required checked>
+                    <label for="terms-checkbox">
+                        I agree to the <a href="/privacy-policy" target="_blank">Privacy Policy</a> & <a href="/terms" target="_blank">Terms</a>
+                    </label>
+                </div>
+                
+                <button class="proceed-btn" id="btn-checkout" style="width: 100%; justify-content: center;">
+                    Proceed to Pay <span id="btn-total">₹0</span> <span class="arr" style="margin-left: 8px;">➔</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Overlay for states -->
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">Item added to cart</div>
+
+    <!-- Overlay -->
     <div id="state-overlay" class="overlay hidden">
         <div class="overlay-content">
             <div id="overlay-icon" class="overlay-icon"></div>

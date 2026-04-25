@@ -3,35 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Checkout Flow - Smart Vending Machine</title>
+    <title>Checkout Flow - Smart Vending Machine</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="policy-page">
-    <div class="kiosk-bg"></div>
-    <div class="container policy-container">
-        <div class="policy-content">
-            <a href="/" class="btn-back">← Back to Machine</a>
-            
-            <h1>Payment Checkout Flow</h1>
+<body>
+    <header class="info-header">
+        <a href="/" class="btn-back">←</a>
+        <h1>Checkout Flow</h1>
+    </header>
+
+    <main class="info-container">
+        <div class="info-card">
+            <h2>🛍 How It Works</h2>
+            <p>Our secure and automated checkout process is simple:</p>
             <ol>
-                <li>User selects a product from the website or vending interface</li>
-                <li>The system displays the payment option (QR / UPI / gateway)</li>
-                <li>User completes the payment using their preferred method</li>
-                <li>Payment is verified through the payment gateway</li>
-                <li>Upon successful payment, the vending machine dispenses the selected product</li>
+                <li><strong>Browse & Select:</strong> Pick your desired products from the grid and add them to your cart.</li>
+                <li><strong>Review Cart:</strong> Click 'View Cart' to review quantities and total amount.</li>
+                <li><strong>Pay Securely:</strong> Click 'Proceed to Pay' to launch the Razorpay gateway. Use UPI, Card, or Netbanking.</li>
+                <li><strong>Verification:</strong> The system instantly verifies your payment status.</li>
+                <li><strong>Dispense:</strong> Upon success, the machine motors activate and drop your items.</li>
             </ol>
-            <p>In case of payment failure or product not being dispensed, users can contact support for assistance or refund.</p>
         </div>
 
-        <footer class="footer compliance-footer">
-            <a href="/about">About Us</a> | 
-            <a href="/contact">Contact Us</a> | 
-            <a href="/checkout-flow">Checkout Flow</a> | 
-            <a href="/privacy-policy">Privacy Policy</a> | 
-            <a href="/terms">Terms</a> | 
-            <a href="/refund-policy">Refund Policy</a>
+        <div class="info-card">
+            <h2>⚠ Need Help?</h2>
+            <p>In case of any payment failures or if the product gets stuck and is not dispensed, please check our <a href="/refund-policy">Refund Policy</a> or <a href="/contact">Contact Support</a>.</p>
+        </div>
+
+        <footer class="compliance-footer">
+            <div class="compliance-links">
+                <a href="/about">About Us</a>
+                <a href="/contact">Contact Us</a>
+                <a href="/checkout-flow">Checkout Flow</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/terms">Terms & Conditions</a>
+                <a href="/refund-policy">Refund Policy</a>
+            </div>
+            <p>&copy; 2026 College Project</p>
         </footer>
-    </div>
+    </main>
 </body>
 </html>

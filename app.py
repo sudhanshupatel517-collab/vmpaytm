@@ -66,29 +66,39 @@ def index():
 @app.route('/api/create_order', methods=['POST'])
 def create_order():
     data = request.get_json()
-    item_id = data.get('item_id')
-    quantity = int(data.get('quantity', 1))
+    cart = data.get('cart', [])
     
-    if item_id not in ITEMS:
-        return jsonify({"status": "error", "message": "Invalid item selected."}), 400
-    if quantity < 1 or quantity > 2:
-        return jsonify({"status": "error", "message": "Invalid quantity."}), 400
+    if not cart or not isinstance(cart, list):
+        return jsonify({"status": "error", "message": "Cart is empty or invalid."}), 400
 
-    amount = ITEMS[item_id]['price'] * quantity * 100 # Razorpay takes amount in paise
+    total_amount = 0
+    item_names = []
+    
+    for cart_item in cart:
+        item_id = cart_item.get('item_id')
+        quantity = int(cart_item.get('quantity', 1))
+        
+        if item_id not in ITEMS:
+            return jsonify({"status": "error", "message": f"Invalid item selected: {item_id}"}), 400
+        if quantity < 1 or quantity > 4:
+            return jsonify({"status": "error", "message": f"Invalid quantity for {item_id}. Max 4 allowed."}), 400
+            
+        total_amount += ITEMS[item_id]['price'] * quantity * 100
+        item_names.append(f"{ITEMS[item_id]['name']} (x{quantity})")
 
     try:
         order = razorpay_client.order.create({
-            "amount": amount,
+            "amount": total_amount,
             "currency": "INR",
             "payment_capture": "1"
         })
         return jsonify({
             "status": "success", 
             "order_id": order['id'], 
-            "amount": amount,
+            "amount": total_amount,
             "key": RAZORPAY_KEY_ID,
-            "name": ITEMS[item_id]['name'],
-            "quantity": quantity
+            "name": ", ".join(item_names),
+            "cart": cart
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -98,8 +108,7 @@ def verify_payment():
     global last_dispense_time
     
     data = request.get_json()
-    item_id = data.get('item_id')
-    quantity = int(data.get('quantity', 1))
+    cart = data.get('cart', [])
     razorpay_payment_id = data.get('razorpay_payment_id')
     razorpay_order_id = data.get('razorpay_order_id')
     razorpay_signature = data.get('razorpay_signature')
@@ -121,41 +130,46 @@ def verify_payment():
     last_dispense_time = current_time
 
     # 2. Trigger Motor
-    success = False
+    success = True
     error_msg = ""
+    dispensed_items = []
     
     try:
-        if GPIO_AVAILABLE and item_id in motors:
-            motor = motors[item_id]
-            for i in range(quantity):
-                try:
-                    motor.forward()
-                    time.sleep(ROTATION_TIME)
-                finally:
-                    motor.stop()
-                
-                if i < quantity - 1:
+        for cart_item in cart:
+            item_id = cart_item.get('item_id')
+            quantity = int(cart_item.get('quantity', 1))
+            
+            if GPIO_AVAILABLE and item_id in motors:
+                motor = motors[item_id]
+                for i in range(quantity):
+                    try:
+                        motor.forward()
+                        time.sleep(ROTATION_TIME)
+                    finally:
+                        motor.stop()
+                    
                     time.sleep(1.0) # Delay between multi-drops
-            success = True
-        else:
-            # Mock behavior for local testing
-            for i in range(quantity):
-                print(f"[MOCK] DC Motor on Pins ({ITEMS[item_id]['pin1']}, {ITEMS[item_id]['pin2']}) moving forward for {ROTATION_TIME}s")
-                time.sleep(ROTATION_TIME)
-                if i < quantity - 1:
-                    time.sleep(1.0)
-            success = True
+            else:
+                # Mock behavior for local testing
+                if item_id in ITEMS:
+                    for i in range(quantity):
+                        print(f"[MOCK] DC Motor on Pins ({ITEMS[item_id]['pin1']}, {ITEMS[item_id]['pin2']}) moving forward for {ROTATION_TIME}s")
+                        time.sleep(ROTATION_TIME)
+                        time.sleep(1.0)
+                        
+            dispensed_items.append(f"{ITEMS[item_id]['name']} (x{quantity})")
             
     except Exception as e:
+        success = False
         error_msg = str(e)
-        logging.error(f"Motor Error for {item_id}: {error_msg}")
+        logging.error(f"Motor Error: {error_msg}")
 
     if success:
         last_dispense_time = time.time()
-        logging.info(f"Item {item_id} dispensed successfully after payment {razorpay_payment_id}.")
+        logging.info(f"Items {dispensed_items} dispensed successfully after payment {razorpay_payment_id}.")
         return jsonify({
             "status": "success",
-            "message": f"Payment successful! {ITEMS[item_id]['name']} dispensed!"
+            "message": f"Payment successful! {', '.join(dispensed_items)} dispensed!"
         })
     else:
         return jsonify({

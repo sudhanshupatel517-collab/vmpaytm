@@ -1,67 +1,162 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const kioskItems = document.querySelectorAll('.kiosk-item');
-    const cartBar = document.getElementById('cart-bar');
-    const cartIcon = document.getElementById('cart-icon');
-    const cartName = document.getElementById('cart-name');
-    const cartUnitPrice = document.getElementById('cart-unit-price');
-    const cartQtyDisplay = document.getElementById('cart-qty');
-    const cartTotalDisplay = document.getElementById('cart-total');
+    const productCards = document.querySelectorAll('.product-card');
     
-    const btnRemoveCart = document.getElementById('btn-remove-cart');
-    const btnQtyMinus = document.getElementById('btn-qty-minus');
-    const btnQtyPlus = document.getElementById('btn-qty-plus');
+    // Cart Bar Elements
+    const cartBar = document.getElementById('cart-bar');
+    const cartTotalItems = document.getElementById('cart-total-items');
+    const cartTotalPrice = document.getElementById('cart-total-price');
+    const btnViewCart = document.getElementById('btn-view-cart');
+    
+    // Cart Panel Elements
+    const cartPanelOverlay = document.getElementById('cart-panel-overlay');
+    const btnCloseCart = document.getElementById('btn-close-cart');
+    const cartItemsList = document.getElementById('cart-items-list');
+    const panelTotalPrice = document.getElementById('panel-total-price');
+    const btnTotal = document.getElementById('btn-total');
     const btnCheckout = document.getElementById('btn-checkout');
-
+    
+    // UI Feedback Elements
+    const toast = document.getElementById('toast');
     const overlay = document.getElementById('state-overlay');
     const overlayIcon = document.getElementById('overlay-icon');
     const overlayTitle = document.getElementById('overlay-title');
     const overlaySubtitle = document.getElementById('overlay-subtitle');
 
-    let currentItem = null;
-    let currentQty = 1;
+    let cart = {}; // Object mapping id -> {name, price, icon, qty}
     let isProcessing = false;
+    let toastTimeout;
 
-    // UI Updates
-    const updateCartUI = () => {
-        if (!currentItem) {
-            cartBar.classList.add('hidden');
-            kioskItems.forEach(item => {
-                item.classList.remove('active');
-                item.querySelector('.item-check').classList.add('hidden');
-            });
-            return;
-        }
+    const showToast = (msg) => {
+        toast.textContent = msg;
+        toast.classList.remove('hidden', 'fade-out');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.classList.add('hidden'), 300);
+        }, 2000);
+    };
 
-        cartBar.classList.remove('hidden');
-        cartIcon.textContent = currentItem.icon;
-        cartName.textContent = currentItem.name;
-        cartUnitPrice.textContent = `₹${currentItem.price}`;
-        cartQtyDisplay.textContent = currentQty;
-        cartTotalDisplay.textContent = `₹${currentItem.price * currentQty}`;
-
-        if (currentQty >= 2) {
-            btnQtyPlus.classList.add('disabled');
-        } else {
-            btnQtyPlus.classList.remove('disabled');
-        }
-
-        if (currentQty <= 1) {
-            btnQtyMinus.classList.add('disabled');
-        } else {
-            btnQtyMinus.classList.remove('disabled');
-        }
-
-        kioskItems.forEach(item => {
-            if (item.getAttribute('data-id') === currentItem.id) {
-                item.classList.add('active');
-                item.querySelector('.item-check').classList.remove('hidden');
+    // Update the main product cards grid based on cart state
+    const updateGridUI = () => {
+        productCards.forEach(card => {
+            const id = card.getAttribute('data-id');
+            const addBtn = card.querySelector('.add-btn');
+            const qtyControl = card.querySelector('.qty-control');
+            const qtyText = card.querySelector('.qty-text');
+            
+            const qty = cart[id] ? cart[id].qty : 0;
+            if (qty === 0) {
+                addBtn.classList.remove('hidden');
+                qtyControl.classList.add('hidden');
+                card.classList.remove('active-card');
             } else {
-                item.classList.remove('active');
-                item.querySelector('.item-check').classList.add('hidden');
+                addBtn.classList.add('hidden');
+                qtyControl.classList.remove('hidden');
+                qtyText.textContent = qty;
+                card.classList.add('active-card');
             }
         });
     };
 
+    // Render items inside the cart panel
+    const renderCartPanel = () => {
+        cartItemsList.innerHTML = '';
+        Object.keys(cart).forEach(id => {
+            if (cart[id].qty > 0) {
+                const item = cart[id];
+                const el = document.createElement('div');
+                el.className = 'panel-cart-item';
+                el.innerHTML = `
+                    <div class="panel-cart-item-info">
+                        <div class="panel-cart-item-icon">${item.icon}</div>
+                        <div>
+                            <div class="panel-cart-item-name">${item.name}</div>
+                            <div class="panel-cart-item-price">₹${item.price} / item</div>
+                        </div>
+                    </div>
+                    <div class="panel-cart-controls">
+                        <div class="panel-qty-control">
+                            <button class="panel-minus" data-id="${id}">−</button>
+                            <span>${item.qty}</span>
+                            <button class="panel-plus" data-id="${id}">+</button>
+                        </div>
+                        <button class="panel-remove-btn" data-id="${id}">✖</button>
+                    </div>
+                `;
+                cartItemsList.appendChild(el);
+            }
+        });
+
+        // Add event listeners to panel buttons
+        document.querySelectorAll('.panel-minus').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                if (cart[id] && cart[id].qty > 0) {
+                    cart[id].qty--;
+                    if (cart[id].qty === 0) {
+                        delete cart[id];
+                        showToast("Item removed");
+                    }
+                    updateCartUI();
+                }
+            });
+        });
+
+        document.querySelectorAll('.panel-plus').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                if (cart[id] && cart[id].qty < 4) {
+                    cart[id].qty++;
+                    updateCartUI();
+                } else {
+                    showToast(`Maximum 4 allowed`);
+                }
+            });
+        });
+
+        document.querySelectorAll('.panel-remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                delete cart[id];
+                showToast("Item removed");
+                updateCartUI();
+            });
+        });
+    };
+
+    // Master function to sync all UI (grid, cart bar, panel)
+    const updateCartUI = () => {
+        let totalQty = 0;
+        let totalPrice = 0;
+        let cartArray = [];
+
+        Object.keys(cart).forEach(id => {
+            if (cart[id].qty > 0) {
+                totalQty += cart[id].qty;
+                totalPrice += cart[id].price * cart[id].qty;
+                cartArray.push({ item_id: id, quantity: cart[id].qty });
+            }
+        });
+
+        // Update Bottom Bar
+        if (totalQty === 0) {
+            cartBar.classList.add('hidden');
+            cartPanelOverlay.classList.add('hidden'); // Close panel if empty
+        } else {
+            cartBar.classList.remove('hidden');
+            cartTotalItems.textContent = `${totalQty} Item${totalQty > 1 ? 's' : ''}`;
+            cartTotalPrice.textContent = `₹${totalPrice}`;
+            btnTotal.textContent = `₹${totalPrice}`;
+            panelTotalPrice.textContent = `₹${totalPrice}`;
+        }
+
+        updateGridUI();
+        renderCartPanel();
+        
+        return cartArray;
+    };
+
+    // Overlay state manager
     const setOverlayState = (state, message = '', subtitle = '') => {
         if (state === 'hidden') {
             overlay.classList.add('hidden');
@@ -77,150 +172,164 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (state === 'dispensing') overlayIcon.innerHTML = '⚙️';
     };
 
-    // Event Listeners
-    kioskItems.forEach(item => {
-        item.addEventListener('click', () => {
+    // Initialize Card Listeners on the Grid
+    productCards.forEach(card => {
+        const id = card.getAttribute('data-id');
+        const name = card.getAttribute('data-name');
+        const price = parseInt(card.getAttribute('data-price'));
+        const icon = card.getAttribute('data-icon');
+        
+        const addBtn = card.querySelector('.add-btn');
+        const minusBtn = card.querySelector('.minus-btn');
+        const plusBtn = card.querySelector('.plus-btn');
+
+        addBtn.addEventListener('click', () => {
             if (isProcessing) return;
-            currentItem = {
-                id: item.getAttribute('data-id'),
-                name: item.getAttribute('data-name'),
-                price: parseInt(item.getAttribute('data-price')),
-                icon: item.getAttribute('data-icon')
-            };
-            currentQty = 1;
+            cart[id] = { name, price, icon, qty: 1 };
+            showToast(`${name} added to cart`);
             updateCartUI();
+        });
+
+        minusBtn.addEventListener('click', () => {
+            if (isProcessing) return;
+            if (cart[id] && cart[id].qty > 0) {
+                cart[id].qty--;
+                if (cart[id].qty === 0) {
+                    delete cart[id];
+                    showToast("Item removed");
+                }
+                updateCartUI();
+            }
+        });
+
+        plusBtn.addEventListener('click', () => {
+            if (isProcessing) return;
+            if (cart[id] && cart[id].qty < 4) {
+                cart[id].qty++;
+                updateCartUI();
+            } else if (cart[id] && cart[id].qty >= 4) {
+                showToast(`Maximum 4 allowed`);
+            }
         });
     });
 
-    btnRemoveCart.addEventListener('click', () => {
-        if (isProcessing) return;
-        currentItem = null;
-        updateCartUI();
+    // Cart Panel Toggling
+    btnViewCart.addEventListener('click', () => {
+        if (Object.keys(cart).length > 0) {
+            cartPanelOverlay.classList.remove('hidden');
+        }
     });
 
-    btnQtyMinus.addEventListener('click', () => {
-        if (isProcessing || currentQty <= 1) return;
-        currentQty--;
-        updateCartUI();
+    btnCloseCart.addEventListener('click', () => {
+        cartPanelOverlay.classList.add('hidden');
     });
 
-    btnQtyPlus.addEventListener('click', () => {
-        if (isProcessing || currentQty >= 2) return;
-        currentQty++;
-        updateCartUI();
+    cartPanelOverlay.addEventListener('click', (e) => {
+        // Close if clicking outside the panel
+        if (e.target === cartPanelOverlay) {
+            cartPanelOverlay.classList.add('hidden');
+        }
     });
 
     // Checkout Flow
     btnCheckout.addEventListener('click', async () => {
-        if (isProcessing || !currentItem) return;
+        const cartArray = updateCartUI();
+        if (isProcessing || cartArray.length === 0) return;
         
         const termsCheckbox = document.getElementById('terms-checkbox');
         if (!termsCheckbox.checked) {
-            alert("Please agree to the Privacy Policy, Terms & Conditions, and Refund Policy before making a payment.");
+            alert("Please agree to the Privacy Policy & Terms before paying.");
             return;
         }
 
         isProcessing = true;
+        btnCheckout.classList.add('disabled');
+        cartPanelOverlay.classList.add('hidden'); // Hide panel during checkout
         setOverlayState('loading', 'Creating Order...', 'Please wait');
 
         try {
-            // 1. Create Order
             const orderRes = await fetch('/api/create_order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ item_id: currentItem.id, quantity: currentQty })
+                body: JSON.stringify({ cart: cartArray })
             });
-
             const orderData = await orderRes.json();
-
+            
             if (!orderRes.ok || orderData.status !== 'success') {
                 throw new Error(orderData.message || 'Failed to create order.');
             }
 
             setOverlayState('hidden');
 
-            // 2. Open Razorpay Checkout
             const options = {
                 "key": orderData.key,
                 "amount": orderData.amount,
                 "currency": "INR",
-                "name": "Smart Vending Kiosk",
-                "description": `Purchase ${currentQty}x ${orderData.name}`,
+                "name": "SmartVending",
+                "description": `Instamart Checkout`,
                 "order_id": orderData.order_id,
                 "handler": async function (response) {
-                    setOverlayState('loading', 'Processing payment...', 'Verifying securely with backend');
+                    setOverlayState('loading', 'Processing payment...', 'Verifying securely...');
                     
-                    // 3. Verify Payment
                     const verifyPromise = fetch('/api/verify_payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            item_id: currentItem.id,
-                            quantity: currentQty,
+                            cart: cartArray,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_signature: response.razorpay_signature
                         })
                     });
 
+                    let totalItems = 0;
+                    cartArray.forEach(c => totalItems += c.quantity);
                     const timeoutPromise = new Promise((_, reject) => {
-                        setTimeout(() => reject(new Error('TIMEOUT')), 15000); // 15s timeout for multi-dispense
+                        setTimeout(() => reject(new Error('TIMEOUT')), 15000 + (totalItems * 3000));
                     });
 
                     try {
                         const verifyRes = await Promise.race([verifyPromise, timeoutPromise]);
                         const verifyData = await verifyRes.json();
-                        
                         if (verifyRes.ok && verifyData.status === 'success') {
-                            setOverlayState('dispensing', 'Payment successful!', `Dispensing ${currentQty} items...`);
-                            // Wait for hardware drops (approx 3s per item)
+                            setOverlayState('dispensing', 'Payment successful!', `Dispensing ${totalItems} items...`);
                             setTimeout(() => {
-                                setOverlayState('success', 'Please collect your items', 'Thank you for your purchase!');
+                                setOverlayState('success', 'Please collect your items', 'Thank you!');
                                 setTimeout(() => {
                                     isProcessing = false;
-                                    currentItem = null;
+                                    btnCheckout.classList.remove('disabled');
+                                    cart = {}; // Clear cart
                                     updateCartUI();
                                     setOverlayState('hidden');
                                 }, 4000);
-                            }, currentQty * 3000); 
+                            }, totalItems * 3000); 
                         } else {
                             throw new Error(verifyData.message || 'Verification failed.');
                         }
                     } catch (err) {
-                        console.error(err);
-                        setOverlayState('error', 'Payment verification failed', err.message === 'TIMEOUT' ? 'Taking too long.' : 'Please contact support.');
-                        setTimeout(() => {
-                            is:Processing = false;
-                            setOverlayState('hidden');
-                        }, 5000);
+                        setOverlayState('error', 'Payment Failed', err.message === 'TIMEOUT' ? 'Taking too long.' : err.message);
+                        setTimeout(() => { isProcessing = false; btnCheckout.classList.remove('disabled'); setOverlayState('hidden'); }, 4000);
                     }
                 },
-                "theme": { "color": "#4f46e5" },
+                "theme": { "color": "#3b82f6" },
                 "modal": {
                     "ondismiss": function() {
                         isProcessing = false;
+                        btnCheckout.classList.remove('disabled');
                         setOverlayState('hidden');
                     }
                 }
             };
-            
             const rzp = new Razorpay(options);
             rzp.on('payment.failed', function (response){
                 setOverlayState('error', 'Payment Failed', response.error.description);
-                setTimeout(() => {
-                    isProcessing = false;
-                    setOverlayState('hidden');
-                }, 5000);
+                setTimeout(() => { isProcessing = false; btnCheckout.classList.remove('disabled'); setOverlayState('hidden'); }, 4000);
             });
             rzp.open();
 
         } catch (error) {
-            console.error('Error:', error);
             setOverlayState('error', 'Connection Error', error.message);
-            setTimeout(() => {
-                isProcessing = false;
-                setOverlayState('hidden');
-            }, 4000);
+            setTimeout(() => { isProcessing = false; btnCheckout.classList.remove('disabled'); setOverlayState('hidden'); }, 4000);
         }
     });
 });
