@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Vending Machine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Light Kiosk Background -->
+    <div class="kiosk-bg"></div>
+
+    <main class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📦</span>
+                <h1>SmartVending</h1>
+            </div>
+            <p class="subtitle">Raspberry Pi Powered Dispenser</p>
+        </header>
+
+        <section class="card">
+            <div class="status-indicator">
+                <div class="dot pulse"></div>
+                <span id="main-status">Select your item</span>
+            </div>
+
+            <div id="items-grid" class="items-grid kiosk-grid">
+                <!-- Items -->
+                <div class="item-card kiosk-item" data-id="chips" data-name="Chips" data-price="10" data-icon="🥔">
+                    <div class="item-check hidden">✔️</div>
+                    <div class="item-icon">🥔</div>
+                    <h3>Chips</h3>
+                    <div class="item-price">₹10</div>
+                </div>
+                <div class="item-card kiosk-item" data-id="biscuit" data-name="Biscuits" data-price="10" data-icon="🍪">
+                    <div class="item-check hidden">✔️</div>
+                    <div class="item-icon">🍪</div>
+                    <h3>Biscuits</h3>
+                    <div class="item-price">₹10</div>
+                </div>
+                <div class="item-card kiosk-item" data-id="soda" data-name="Soda" data-price="40" data-icon="🥤">
+                    <div class="item-check hidden">✔️</div>
+                    <div class="item-icon">🥤</div>
+                    <h3>Soda</h3>
+                    <div class="item-price">₹40</div>
+                </div>
+                <div class="item-card kiosk-item" data-id="chocolate" data-name="Chocolate" data-price="20" data-icon="🍫">
+                    <div class="item-check hidden">✔️</div>
+                    <div class="item-icon">🍫</div>
+                    <h3>Chocolate</h3>
+                    <div class="item-price">₹20</div>
+                </div>
+            </div>
+
+            <div id="message-area" class="message-area hidden"></div>
+        </section>
+
+        <footer class="footer compliance-footer">
+            <div class="compliance-links">
+                <a href="/about" target="_blank">About Us</a> | 
+                <a href="/contact" target="_blank">Contact Us</a> | 
+                <a href="/checkout-flow" target="_blank">Checkout Flow</a> | 
+                <a href="/privacy-policy" target="_blank">Privacy Policy</a> | 
+                <a href="/terms" target="_blank">Terms & Conditions</a> | 
+                <a href="/refund-policy" target="_blank">Refund Policy</a>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">&copy; 2026 College Project | RPi 4 Model B</p>
+        </footer>
+    </main>
+
+    <!-- Cart Bottom Bar -->
+    <div id="cart-bar" class="cart-bar hidden">
+        <div class="cart-left">
+            <div id="cart-icon" class="cart-item-icon">🥔</div>
+            <div class="cart-item-details">
+                <h4 id="cart-name">Chips</h4>
+                <p id="cart-unit-price">₹10</p>
+            </div>
+            <button id="btn-remove-cart" class="btn-icon">✖</button>
+            
+            <div class="qty-selector">
+                <button id="btn-qty-minus" class="btn-qty">-</button>
+                <span id="cart-qty">1</span>
+                <button id="btn-qty-plus" class="btn-qty">+</button>
+            </div>
+        </div>
+        
+        <div class="cart-right">
+            <div class="compliance-checkbox">
+                <input type="checkbox" id="terms-checkbox" required>
+                <label for="terms-checkbox">
+                    I agree to the <a href="/privacy-policy" target="_blank">Privacy Policy</a>, <a href="/terms" target="_blank">Terms</a>, and <a href="/refund-policy" target="_blank">Refund Policy</a>
+                </label>
+            </div>
+            <button id="btn-checkout" class="btn-checkout">
+                <span class="checkout-text">Pay Total</span>
+                <span id="cart-total" class="checkout-total">₹10</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay for states -->
+    <div id="state-overlay" class="overlay hidden">
+        <div class="overlay-content">
+            <div id="overlay-icon" class="overlay-icon"></div>
+            <h2 id="overlay-title">Processing...</h2>
+            <p id="overlay-subtitle">Please wait</p>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
